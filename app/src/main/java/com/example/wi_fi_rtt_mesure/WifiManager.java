@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.aware.AttachCallback;
+import android.net.wifi.aware.DiscoverySession;
 import android.net.wifi.aware.DiscoverySessionCallback;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.aware.PublishConfig;
@@ -26,6 +27,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -38,7 +40,17 @@ public class WifiManager {
     private Handler mHandler;
     private final Executor executor;
     public static final String AWARE_SERVICE_NAME = "Aware";
-    private SubscribeDiscoverySession session;
+    private SubscribeDiscoverySession subsession;
+    private PublishDiscoverySession pubsession;
+
+    private List<RangingResult> rangingResults;
+    private TextView result_distance;
+    private TextView counter;
+    private int count_success = 0;
+
+    //補正に使う一次関数の傾き(a)と切片(b)
+    private double a = 0.85;
+    private double b = -1354;
 
     public PeerHandle peerHandle = null;
 
@@ -77,6 +89,7 @@ public class WifiManager {
                 public void onPublishStarted(PublishDiscoverySession session) {
                     super.onPublishStarted(session);
                     Toast.makeText(context, "Service published! Waiting for Subscriber", Toast.LENGTH_SHORT).show();
+                    WifiManager.this.pubsession = session;
                 }
                 @Override
                 public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
@@ -98,7 +111,7 @@ public class WifiManager {
                 @Override
                 public void onSubscribeStarted(SubscribeDiscoverySession session) {
                     super.onSubscribeStarted(session);
-                    WifiManager.this.session = session;
+                    WifiManager.this.subsession = session;
                     Toast.makeText(context, "Subscriber started", Toast.LENGTH_SHORT).show();
                 }
 
@@ -107,8 +120,8 @@ public class WifiManager {
                     super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
                     Toast.makeText(context, "Service discoverd" + peerHandle.toString() + "\t sending message now", Toast.LENGTH_SHORT).show();
                     String msg = "hello";
-                    session.sendMessage(peerHandle, 1, msg.getBytes());
-                    WifiManager.this.peerHandle = peerHandle;
+                    subsession.sendMessage(peerHandle, 1, msg.getBytes());
+                    //WifiManager.this.peerHandle = peerHandle;
                 }
             }, null);
 
@@ -169,7 +182,7 @@ public class WifiManager {
         context.registerReceiver(rtt_Receiver, rtt_filter);
     }
 
-    public void connectRtt() {
+    public void connectRtt(final SaveFile saveFile) {
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.d("check", "ACCESS_FINE_LOCATION permission OK");
@@ -187,12 +200,24 @@ public class WifiManager {
 
             @Override
             public void onRangingFailure(int code) {
-
+                Log.d("rtt_failure", "onRangingFailure" + code);
+                //rangingResults = new ArrayList<RangingResult>();
             }
 
             @Override
             public void onRangingResults(List<RangingResult> results) {
-
+                Log.v("rangingresults", "onRangingResults : " + results);
+                rangingResults = results;
+                if (rangingResults.get(0).getStatus() == RangingResult.STATUS_SUCCESS) {
+                    //count_success++;
+                    //Toast.makeText(context, "success!", Toast.LENGTH_SHORT).show();
+                    result_distance.setText(rangingResults.get(0).getDistanceMm() + " Mm");
+                    //counter.setText(count_success);
+                    String str = rangingResults.get(0).getDistanceMm() + "," + rangingResults.get(0).getDistanceStdDevMm() + "," + rangingResults.get(0).getRssi() + "," + rangingResults.get(0).getRangingTimestampMillis();
+                    saveFile.write(str);
+                }else{
+                    Toast.makeText(context, "failure", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -205,5 +230,31 @@ public class WifiManager {
             Log.d("check", "ACCESS_FINE_LOCATION permission NG");
             return;
         }
+        if(pubsession != null){
+            pubsession.close();
+            Toast.makeText(context, "pubsession closed", Toast.LENGTH_SHORT).show();
+        }
+        if(subsession != null){
+            subsession.close();
+            Toast.makeText(context, "subsession closed", Toast.LENGTH_SHORT).show();
+        }
+        //awareSession.close();
+    }
+
+    public void getTextView(TextView result_distance, TextView counter){
+        this.result_distance = result_distance;
+        this.counter = counter;
+    }
+
+    private int function(float x){
+        double y;
+
+        y = a*x + b;
+        return (int)y;
+    }
+
+    public void resetCounter(){
+        this.count_success = 0;
+        awareSession.close();
     }
 }
