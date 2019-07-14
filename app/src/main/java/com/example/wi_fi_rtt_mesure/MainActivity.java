@@ -3,8 +3,11 @@ package com.example.wi_fi_rtt_mesure;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.wifi.aware.PeerHandle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
@@ -12,10 +15,16 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -24,14 +33,20 @@ public class MainActivity extends AppCompatActivity {
     Context context;
     private Handler handler;
     private boolean flag = false;
-    private final static int measureTime = 30000;
-    private final static int interval = 1000;
+    private final static int measureTime = 60000;
+    private final static int interval = 2000;
     private Timer measureTimer;
     private WifiManager wifiManager;
 
+    private boolean calOrDis;
     private SaveFile saveFile;
-    private String filename = "ranging.csv";
+    private String filename = "ranging_test.csv";
     private String path;
+    private String ID;
+
+    public TextView result_distance;
+    private TextView counter;
+    private ArrayAdapter adapter;
 
     private static final int REQUEST_EXTERNAL_STORAGE_CODE = 0x01;
     private static String[] mPermissions = {
@@ -44,17 +59,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //xmlのデータを選択
         TextView aware_check = findViewById(R.id.aware_check);
         TextView rtt_check = findViewById(R.id.rtt_check);
         TextView aware_avail = findViewById(R.id.aware_avail);
         TextView rtt_avail = findViewById(R.id.rtt_avail);
-        TextView result_distance = findViewById(R.id.result_distance);
-        TextView counter = findViewById(R.id.counter);
+        result_distance = findViewById(R.id.result_distance);
+        counter = findViewById(R.id.counter);
         Button reset = findViewById(R.id.reset);
-        Button check_button = findViewById(R.id.check_permission);
+        Button check_button = findViewById(R.id.calibration);
         Button pub_button = findViewById(R.id.publish);
         Button sub_button = findViewById(R.id.subscribe);
         Button rtt_button = findViewById(R.id.wifi_rtt);
+        Spinner peerSpinner = findViewById(R.id.peerSpinner);
 
         context = getApplicationContext();
 
@@ -64,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         File dir = new File(path);
         dir.mkdir();
 
-        wifiManager = new WifiManager(context, handler);
+        wifiManager = new WifiManager(context, handler, peerSpinner);
 
         wifiManager.check(aware_check, rtt_check);
         wifiManager.available(aware_avail, rtt_avail);
@@ -73,7 +90,8 @@ public class MainActivity extends AppCompatActivity {
         check_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wifiManager.check_permission();
+                calOrDis = true;
+                CreateDialog();
             }
         });
 
@@ -81,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 wifiManager.publisher();
+                wifiManager.subscriber();
             }
         });
 
@@ -88,12 +107,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 wifiManager.subscriber();
+                wifiManager.publisher();
             }
         });
 
         rtt_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
+                calOrDis = false;
                 saveFile.setFilename(filename);
                 saveFile.write("distanceMm,distanceStdDevMm,rssi,timestamp");
                 CreateDialog();
@@ -104,29 +125,63 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 wifiManager.resetCounter();
+                Toast.makeText(context, "reset now", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        peerSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Spinner spinner = (Spinner)parent;
+                ID = (String)spinner.getSelectedItem();
+                wifiManager.selectID(ID);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
     }
 
     public void CreateDialog(){
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this)
-                .setTitle("now collecting")
-                .setMessage(measureTime + "秒待ってください...\n" + path);
+        if(calOrDis == true){
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this)
+                    .setTitle("calibrating now")
+                    .setMessage(measureTime/1000 + "秒待ってください...\n" + path);
+            alertDialogBuilder.setCancelable(true);
+            final AlertDialog Dialog = alertDialogBuilder.create();
+            Dialog.show();
 
-        alertDialogBuilder.setCancelable(true);
-        final AlertDialog Dialog = alertDialogBuilder.create();
-        Dialog.show();
+            if(measureTimer == null)
+                measureTimer = new Timer();
 
-        if(measureTimer == null)
-            measureTimer = new Timer();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    measureStop();
+                    Dialog.dismiss();
+                }
+            }, measureTime);
+        }else{
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this)
+                    .setTitle("now collecting")
+                    .setMessage(measureTime/1000 + "秒待ってください...\n" + path);
+            alertDialogBuilder.setCancelable(true);
+            final AlertDialog Dialog = alertDialogBuilder.create();
+            Dialog.show();
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                measureStop();
-                Dialog.dismiss();
-            }
-        }, measureTime);
+            if(measureTimer == null)
+                measureTimer = new Timer();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    measureStop();
+                    Dialog.dismiss();
+                }
+            }, measureTime);
+        }
 
         measureStart();
     }
@@ -135,7 +190,10 @@ public class MainActivity extends AppCompatActivity {
         measureTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                wifiManager.connectRtt(saveFile);
+                if(calOrDis == true)
+                    wifiManager.getCalibrationdData();
+                else
+                    wifiManager.connectRtt(saveFile);
             }
         }, 0, interval);
     }
@@ -144,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         if(measureTimer != null){
             measureTimer.cancel();
             measureTimer = null;
+            counter.setText(wifiManager.count_success + "回");
         }
     }
 

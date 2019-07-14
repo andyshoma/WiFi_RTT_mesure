@@ -83,6 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="18sp" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -108,37 +109,6 @@
     <Space
         android:layout_width="match_parent"
         android:layout_height="20sp" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/check_permission"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#007AB7"
-            android:text="permission"
-            tools:textColor="#FFFFFF" />
-
-        <Space
-            android:layout_width="20sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/select_file"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#007AB7"
-            android:text="select file"
-            android:textColor="#FFFFFF" />
-    </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="30sp" />
 
     <TextView
         android:id="@+id/textView"
@@ -182,6 +152,48 @@
             android:textColor="#FFFFFF" />
 
     </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="30sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/calibration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#007AB7"
+            android:text="calibration"
+            tools:textColor="#FFFFFF" />
+
+        <Space
+            android:layout_width="20sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/select_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#007AB7"
+            android:text="select file"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="30sp"
+        android:layout_weight="1" />
+
+    <Spinner
+        android:id="@+id/peerSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
 
     <Space
         android:layout_width="match_parent"

@@ -22,16 +22,27 @@ import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
 
 import android.os.Handler;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executor;
 
 public class WifiManager {
+
+    public static final String SERIAL_NAME = "wifi";
 
     public Context context;
     private final WifiAwareManager wifiAwareManager;
@@ -44,23 +55,44 @@ public class WifiManager {
     private PublishDiscoverySession pubsession;
 
     private List<RangingResult> rangingResults;
+    public List<String> stringList = new ArrayList<String>();
     private TextView result_distance;
     private TextView counter;
-    private int count_success = 0;
+    private Spinner spinner;
+    private ArrayAdapter adapter;
+    private ArrayList<String> idList;
+    private Map<String, PeerHandle> idPeerHandle;
+    private Map<String, Integer> idOffset;
+    private String selectId;
+    private Integer ID;
+
+    private Integer sum = 0;
+    private Integer trueDistance = 1000;
+    public int count_success = 0;
 
     //補正に使う一次関数の傾き(a)と切片(b)
-    private double a = 0.85;
-    private double b = -1354;
+    private double a = 0.91862711;
+    private double b = -1480.913288;
 
     public PeerHandle peerHandle = null;
+    public ArrayList<PeerHandle> peerHandles;
 
-    public WifiManager(Context context, Handler handler) {
+    public WifiManager(Context context, Handler handler, Spinner spinner) {
         this.context = context;
         wifiAwareManager = (WifiAwareManager) context.getSystemService(Context.WIFI_AWARE_SERVICE);
         wifiRttManager = (WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
         mHandler = handler;
         executor = context.getMainExecutor();
 
+        this.spinner = spinner;
+        adapter = new ArrayAdapter<PeerHandle>(context, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+
+        Random rnd = new Random();
+        ID = rnd.nextInt();
+        idList = new ArrayList<>();
+        idPeerHandle = new HashMap();
         wifiAwareManager.attach(new myAttachCallback(), mHandler);
     }
 
@@ -96,6 +128,13 @@ public class WifiManager {
                     super.onMessageReceived(peerHandle, message);
                     Toast.makeText(context, "Message Received" + message, Toast.LENGTH_SHORT).show();
                     WifiManager.this.peerHandle = peerHandle;
+                    String messageID = new String(message);
+                    if(idList == null || idList.indexOf(messageID) == -1){
+                        idList.add(messageID);
+                        idPeerHandle.put(messageID, peerHandle);
+                        adapter.add(messageID);
+                        adapter.notifyDataSetChanged();
+                    }
                 }
             }, null);
         }
@@ -119,9 +158,8 @@ public class WifiManager {
                 public void onServiceDiscovered(PeerHandle peerHandle, byte[] serviceSpecificInfo, List<byte[]> matchFilter) {
                     super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
                     Toast.makeText(context, "Service discoverd" + peerHandle.toString() + "\t sending message now", Toast.LENGTH_SHORT).show();
-                    String msg = "hello";
-                    subsession.sendMessage(peerHandle, 1, msg.getBytes());
-                    //WifiManager.this.peerHandle = peerHandle;
+                    subsession.sendMessage(peerHandle, 1, String.valueOf(ID).getBytes());
+                    WifiManager.this.peerHandle = peerHandle;
                 }
             }, null);
 
@@ -207,16 +245,15 @@ public class WifiManager {
             @Override
             public void onRangingResults(List<RangingResult> results) {
                 Log.v("rangingresults", "onRangingResults : " + results);
-                rangingResults = results;
-                if (rangingResults.get(0).getStatus() == RangingResult.STATUS_SUCCESS) {
-                    //count_success++;
+                //rangingResults = results;
+                if (results.get(0).getStatus() == RangingResult.STATUS_SUCCESS) {
+                    count_success++;
                     //Toast.makeText(context, "success!", Toast.LENGTH_SHORT).show();
-                    result_distance.setText(rangingResults.get(0).getDistanceMm() + " Mm");
-                    //counter.setText(count_success);
-                    String str = rangingResults.get(0).getDistanceMm() + "," + rangingResults.get(0).getDistanceStdDevMm() + "," + rangingResults.get(0).getRssi() + "," + rangingResults.get(0).getRangingTimestampMillis();
+                    result_distance.setText(function(results.get(0).getDistanceMm()) + " Mm");
+                    String str = selectId + "," + function(results.get(0).getDistanceMm()) + "," + results.get(0).getDistanceStdDevMm() + "," + results.get(0).getRssi() + "," + results.get(0).getRangingTimestampMillis();
                     saveFile.write(str);
                 }else{
-                    Toast.makeText(context, "failure", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "failure", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -241,20 +278,70 @@ public class WifiManager {
         //awareSession.close();
     }
 
+    public void getCalibrationdData(){
+        if (ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.d("check", "ACCESS_FINE_LOCATION permission OK");
+        } else {
+            Log.d("check", "ACCESS_FINE_LOCATION permission NG");
+            return;
+        }
+
+        RangingRequest.Builder builder = new RangingRequest.Builder();
+        builder.addWifiAwarePeer(peerHandle);
+
+        RangingRequest request = builder.build();
+
+        wifiRttManager.startRanging(request, executor, new RangingResultCallback() {
+
+            @Override
+            public void onRangingFailure(int code) {
+                Log.d("rtt_failure", "onRangingFailure" + code);
+                //rangingResults = new ArrayList<RangingResult>();
+            }
+
+            @Override
+            public void onRangingResults(List<RangingResult> results) {
+                Log.v("rangingresults", "onRangingResults : " + results);
+                //rangingResults = results;
+                if (results.get(0).getStatus() == RangingResult.STATUS_SUCCESS) {
+                    count_success++;
+                    //Toast.makeText(context, "success!", Toast.LENGTH_SHORT).show();
+                    result_distance.setText(results.get(0).getDistanceMm() + " Mm");
+                    sum += results.get(0).getDistanceMm();
+                }
+            }
+        });
+    }
+
+    public void setCalibration(){
+        if(idOffset == null){
+            idOffset = new HashMap<>();
+        }
+
+        idOffset.put(selectId, sum/count_success-trueDistance);
+    }
+
     public void getTextView(TextView result_distance, TextView counter){
         this.result_distance = result_distance;
         this.counter = counter;
     }
 
-    private int function(float x){
+    private int function(double x){
         double y;
+        int offset = idOffset.get(selectId);
 
-        y = a*x + b;
+        y = x - offset;
         return (int)y;
     }
 
     public void resetCounter(){
         this.count_success = 0;
         awareSession.close();
+    }
+
+    public void selectID(String select){
+        selectId = select;
+        peerHandle = idPeerHandle.get(select);
     }
 }
