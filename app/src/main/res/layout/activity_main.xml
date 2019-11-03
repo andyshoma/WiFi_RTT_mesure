@@ -111,6 +111,17 @@
         android:layout_height="20sp" />
 
     <TextView
+        android:id="@+id/ID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#007AB7"
+        android:text="TextView" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="10sp" />
+
+    <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -168,7 +179,7 @@
             android:layout_height="wrap_content"
             android:background="#007AB7"
             android:text="calibration"
-            tools:textColor="#FFFFFF" />
+            android:textColor="#FFFFFF" />
 
         <Space
             android:layout_width="20sp"
