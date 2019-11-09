@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Wi-Fi_RTT_mesure</string>
+    <string name="title_activity_ranging">RangingActivity</string>
+    <string name="title_activity_localize">LocalizeActivity</string>
 </resources>

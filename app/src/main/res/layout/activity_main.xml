@@ -3,10 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
     tools:context=".MainActivity">
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="40sp" />
 
     <TextView
         android:id="@+id/textView2"
@@ -110,12 +114,27 @@
         android:layout_width="match_parent"
         android:layout_height="20sp" />
 
-    <TextView
-        android:id="@+id/ID"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#007AB7"
-        android:text="TextView" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="端末番号入力"
+            android:layout_gravity="center"
+            android:textColor="#007AB7"
+            android:textSize="30sp" />
+
+        <EditText
+            android:id="@+id/deviceID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:hint="番号を入力してください"></EditText>
+    </LinearLayout>
 
     <Space
         android:layout_width="match_parent"
@@ -168,54 +187,11 @@
         android:layout_width="match_parent"
         android:layout_height="30sp" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/calibration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#007AB7"
-            android:text="calibration"
-            android:textColor="#FFFFFF" />
-
-        <Space
-            android:layout_width="20sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/select_file"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#007AB7"
-            android:text="select file"
-            android:textColor="#FFFFFF" />
-    </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="30sp"
-        android:layout_weight="1" />
-
-    <Spinner
-        android:id="@+id/peerSpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="30sp"
-        android:layout_weight="1" />
-
     <TextView
         android:id="@+id/textView12"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="WiFi RTT"
+        android:text="モード選択"
         android:textColor="#009250"
         android:textSize="30sp" />
 
@@ -229,11 +205,11 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/wifi_rtt"
+            android:id="@+id/ranging"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#009250"
-            android:text="start"
+            android:text="ranging"
             android:textColor="#FFFFFF" />
 
         <Space
@@ -242,37 +218,17 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/reset"
+            android:id="@+id/localize"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#009250"
-            android:text="reset"
+            android:text="localize"
             android:textColor="#FFFFFF" />
 
     </LinearLayout>
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="30sp" />
-
-    <TextView
-        android:id="@+id/result_distance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#007AB7"
-        android:textSize="36sp" />
-
-    <TextView
-        android:id="@+id/counter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#007AB7"
-        android:textSize="30sp" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-    </LinearLayout>
+        android:layout_height="80sp" />
 
 </LinearLayout>

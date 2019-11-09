@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,5 +38,7 @@ public class SaveFile {
 
     public void setFilename(String filename){
         this.filename = filename;
+        Toast toast = Toast.makeText(context, "fileを作成!", Toast.LENGTH_LONG);
+        toast.show();
     }
 }

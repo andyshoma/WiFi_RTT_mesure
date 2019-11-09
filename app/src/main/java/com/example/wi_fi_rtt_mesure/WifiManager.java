@@ -69,7 +69,7 @@ public class WifiManager {
     private Map<String, Integer> idOffset;
     private String selectId;
     private Integer ID;
-    private String machineID = "200373";
+    private String deviceID;
     private final static int DELAYTIME = 500;
 
     private Integer sum = 0;
@@ -77,14 +77,17 @@ public class WifiManager {
     public int count_success = 0;
     public int countTry = 0;
 
-    //補正に使う一次関数の傾き(a)と切片(b)
-    private double a = 0.91862711;
-    private double b = -1480.913288;
-
     public PeerHandle peerHandle = null;
     public ArrayList<PeerHandle> peerHandles;
 
-    public WifiManager(Context context, Handler handler, Spinner spinner) {
+    /***
+     * RangingActivityを呼び出す時のコンストラクタ
+     * @param context
+     * @param handler
+     * @param deviceID 端末自身のユニークなID
+     * @param spinner
+     */
+    public WifiManager(Context context, Handler handler, String deviceID, Spinner spinner) {
         this.context = context;
         wifiAwareManager = (WifiAwareManager) context.getSystemService(Context.WIFI_AWARE_SERVICE);
         wifiRttManager = (WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
@@ -96,17 +99,31 @@ public class WifiManager {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
-        //Random rnd = new Random();
-        //ID = rnd.nextInt();
-        ID = Integer.parseInt(machineID);
+        this.deviceID = deviceID;
         idList = new ArrayList<>();
         idPeerHandle = new HashMap();
         peerToId = new HashMap<>();
         peerHandles = new ArrayList<>();
         wifiAwareManager.attach(new myAttachCallback(), mHandler);
+    }
+
+    /***
+     * MainActivityを呼び出す時のコンストラクタ
+     * @param context
+     * @param handler
+     */
+    public WifiManager(Context context, Handler handler) {
+        this.context = context;
+        wifiAwareManager = (WifiAwareManager) context.getSystemService(Context.WIFI_AWARE_SERVICE);
+        wifiRttManager = (WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
+        mHandler = handler;
+        executor = context.getMainExecutor();
+
+        wifiAwareManager.attach(new myAttachCallback(), mHandler);
 
         builder = new RangingRequest.Builder();
     }
+
 
     class myAttachCallback extends AttachCallback {
 
@@ -157,6 +174,9 @@ public class WifiManager {
         }
     }
 
+    /***
+     *subscribeを行う
+     */
     public void subscriber(){
         SubscribeConfig config = new SubscribeConfig.Builder()
                 .setServiceName(AWARE_SERVICE_NAME)
@@ -175,7 +195,7 @@ public class WifiManager {
                 public void onServiceDiscovered(PeerHandle peerHandle, byte[] serviceSpecificInfo, List<byte[]> matchFilter) {
                     super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
                     Toast.makeText(context, "Service discoverd" + peerHandle.toString() + "\t sending message now", Toast.LENGTH_SHORT).show();
-                    subsession.sendMessage(peerHandle, 1, String.valueOf(machineID).getBytes());
+                    subsession.sendMessage(peerHandle, 1, deviceID.getBytes());
                     WifiManager.this.peerHandle = peerHandle;
                 }
             }, null);
@@ -266,10 +286,10 @@ public class WifiManager {
 
                 for (RangingResult result : results) {
                     if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
-                        count_success++;
+                        /*count_success++;
                         result_distance.setText(result.getDistanceMm() + " Mm");
                         String str = peerToId.get(result.getPeerHandle()) + "," + result.getDistanceMm() + "," + result.getDistanceStdDevMm() + "," + result.getRssi() + "," + result.getRangingTimestampMillis();
-                        saveFile.write(str);
+                        saveFile.write(str);*/
                     } else {
                         saveFile.write("STATUS_FAILURE");
                     }
@@ -303,7 +323,21 @@ public class WifiManager {
         //awareSession.close();
     }
 
-    public void getCalibrationdData(final SaveFile saveFile){
+    public boolean checkRanging(){
+        if (peerHandle != null){
+            return true;
+        }else{
+            Toast toast = Toast.makeText(context, "通信相手がいません", Toast.LENGTH_LONG);
+            toast.show();
+            return false;
+        }
+    }
+
+    /***
+     * １対１の測距時に用いるためのrangingメソッド
+     * @param saveFile データの保存先
+     */
+    public void ranging(final SaveFile saveFile){
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.d("check", "ACCESS_FINE_LOCATION permission OK");
@@ -311,11 +345,6 @@ public class WifiManager {
             Log.d("check", "ACCESS_FINE_LOCATION permission NG");
             return;
         }
-
-        RangingRequest.Builder builder = new RangingRequest.Builder();
-        builder.addWifiAwarePeer(peerHandle);
-
-        RangingRequest request = builder.build();
 
         wifiRttManager.startRanging(request, executor, new RangingResultCallback() {
 
@@ -328,9 +357,9 @@ public class WifiManager {
             public void onRangingResults(List<RangingResult> results) {
                 Log.v("rangingresults", "onRangingResults : " + results);
                 if (results.get(0).getStatus() == RangingResult.STATUS_SUCCESS) {
-                    count_success++;
-                    result_distance.setText(results.get(0).getDistanceMm() + " Mm");
-                    sum += results.get(0).getDistanceMm();
+                    //count_success++;
+                    result_distance.setText(results.get(0).getDistanceMm() + " ");
+                    //sum += results.get(0).getDistanceMm();
                     String str = results.get(0).getDistanceMm() + "," + results.get(0).getDistanceStdDevMm() + "," + results.get(0).getRssi() + "," + results.get(0).getRangingTimestampMillis();
                     saveFile.write(str);
                 }
@@ -355,22 +384,39 @@ public class WifiManager {
         return String.valueOf(ID);
     }
 
-    private int function(double x){
-        double y;
-        int offset = idOffset.get(selectId);
-
-        y = x - offset;
-        return (int)y;
-    }
-
     public void resetCounter(){
         this.count_success = 0;
         awareSession.close();
+    }
+
+    public void makeRequest(){
+        builder = new RangingRequest.Builder();
+
+        if(peerHandle != null){
+            Log.d("debug", peerHandle.toString());
+            //RangingRequest.Builder builder = new RangingRequest.Builder();
+            builder.addWifiAwarePeer(peerHandle);
+        }else{
+            return;
+        }
+        request = builder.build();
+    }
+
+    public void setText(TextView result_distance){
+        this.result_distance = result_distance;
     }
 
     public void selectID(String select){
         selectId = select;
         peerHandle = idPeerHandle.get(select);
         System.out.println(peerHandle);
+    }
+
+    public void close() {
+        if (awareSession != null) {
+            awareSession.close();
+            Toast toast = Toast.makeText(context, "close", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 }
