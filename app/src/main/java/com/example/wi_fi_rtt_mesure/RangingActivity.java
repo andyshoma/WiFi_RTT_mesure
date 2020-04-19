@@ -31,8 +31,8 @@ public class RangingActivity extends AppCompatActivity {
     Context context;
     private Handler handler;
     private boolean flag = false;
-    private final static int measureTime = 120000;
-    private final static int interval = 2000;
+    private final static int measureTime = 300000;
+    private final static int interval = 5000;
     private Timer measureTimer;
     private WifiManager wifiManager;
 

@@ -267,17 +267,22 @@ public class WifiManager {
         }
 
         countTry++;
-        for (PeerHandle peer : peerHandles) {
-            builder.addWifiAwarePeer(peer);
+        RangingRequest.Builder builder1 = new RangingRequest.Builder();
+
+        if(peerHandles != null){
+            for (PeerHandle peer : peerHandles) {
+                builder1.addWifiAwarePeer(peer);
+            }
+            request = builder1.build();
+        }else{
+            return;
         }
-        request = builder.build();
 
         wifiRttManager.startRanging(request, executor, new RangingResultCallback() {
 
             @Override
             public void onRangingFailure(int code) {
                 Log.d("rtt_failure", "onRangingFailure" + code);
-                saveFile.write("rangingFailure");
             }
 
             @Override
@@ -286,12 +291,10 @@ public class WifiManager {
 
                 for (RangingResult result : results) {
                     if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
-                        /*count_success++;
-                        result_distance.setText(result.getDistanceMm() + " Mm");
-                        String str = peerToId.get(result.getPeerHandle()) + "," + result.getDistanceMm() + "," + result.getDistanceStdDevMm() + "," + result.getRssi() + "," + result.getRangingTimestampMillis();
-                        saveFile.write(str);*/
-                    } else {
-                        saveFile.write("STATUS_FAILURE");
+                        count_success++;
+                        result_distance.setText(result.getDistanceMm() + " ");
+                        String str =  result.getDistanceMm() + "," + result.getDistanceStdDevMm() + "," + result.getRssi() + "," + result.getRangingTimestampMillis() + "," + peerToId.get(result.getPeerHandle());
+                        saveFile.write(str);
                     }
                 }
             }
@@ -400,6 +403,20 @@ public class WifiManager {
             return;
         }
         request = builder.build();
+    }
+
+    public void makeSomeRequest(){
+        builder = new RangingRequest.Builder();
+
+        if(peerHandles != null){
+            for (PeerHandle peer : peerHandles) {
+                builder.addWifiAwarePeer(peer);
+            }
+            request = builder.build();
+        }else{
+            return;
+        }
+
     }
 
     public void setText(TextView result_distance){

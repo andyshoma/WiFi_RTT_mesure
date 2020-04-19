@@ -28,6 +28,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
+
     Context context;
     private Handler handler;
     private boolean flag = false;
@@ -48,11 +49,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView counter;
     private ArrayAdapter adapter;
 
+
     private static final int REQUEST_EXTERNAL_STORAGE_CODE = 0x01;
     private static String[] mPermissions = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,9 +119,19 @@ public class MainActivity extends AppCompatActivity {
         localize_button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                wifiManager.close();
                 Intent intent = new Intent(context, LocalizeActivity.class);
-                startActivity(intent);
+
+                if(deviceID.getText() != null) {
+                    // 端末番号が入力されている場合
+                    String str = deviceID.getText().toString();
+                    intent.putExtra("DEVICEID", str);
+                }
+                if(aware != null){
+                    // Wi-Fi Aware設定がされている場合
+                    wifiManager.close();
+                    intent.putExtra("AWARE", aware);
+                    startActivity(intent);
+                }
             }
         });
     }
