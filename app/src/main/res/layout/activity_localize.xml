@@ -7,7 +7,7 @@
     android:gravity="center"
     android:orientation="vertical"
     android:background="#4DFFC107"
-    tools:context=".LocalizeActivity">
+    tools:context=".was.LocalizeActivity">
 
     <Button
         android:id="@+id/back"

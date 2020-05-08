@@ -2,4 +2,18 @@
     <string name="app_name">Wi-Fi_RTT_mesure</string>
     <string name="title_activity_ranging">RangingActivity</string>
     <string name="title_activity_localize">LocalizeActivity</string>
+
+    <string name="ranging_interval">Ranging Interval</string>
+    <string name="measure_time">Measure Time</string>
+    <string name="ms">ms</string>
+    <string name="ranging_start">Ranging Start</string>
+    <string name="ranging_stop">Ranging Stop</string>
+
+    <string name="range">Range</string>
+    <string name="range_sd">RangeSD</string>
+    <string name="rssi">RSSI</string>
+    <string name="successes_in_burst">Successes in burst</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

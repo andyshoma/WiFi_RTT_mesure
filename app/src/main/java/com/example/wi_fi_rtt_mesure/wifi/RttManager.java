@@ -12,28 +12,40 @@ import android.net.wifi.rtt.RangingRequest;
 import android.net.wifi.rtt.RangingResult;
 import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.logging.Handler;
+import android.os.Handler;
+
+import com.example.wi_fi_rtt_mesure.view.RangingResultLayout;
 
 public class RttManager {
 
+    private static final String TAG = "RangingResult";
+
     private Context context;
-    private Handler mHandler;
     private Executor executor;
 
     private WifiRttManager wifiRttManager;
     private RangingRequest.Builder builder;
 
-    private List<RangingResult> resultList;
+    private RttRangingResultCallback rangingResultCallback;
+    final Handler mRangeRequestDelayHandler = new Handler();
 
-    public RttManager(Context context, Handler handler) {
+    private int rangingRequestInterval = 1000;
+    private int rangingTime = 60000;
+    private Boolean ranging = false;
+
+    private Map<String, RangingResultLayout> rangingResultLayoutMap;
+
+    public RttManager(Context context) {
         this.context = context;
-        mHandler = handler;
         executor = context.getMainExecutor();
 
         wifiRttManager = (WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
@@ -41,29 +53,41 @@ public class RttManager {
         BroadcastReceiver mReceiver = new ChangeRttReceiver();
         context.registerReceiver(mReceiver, filter);
 
-        builder = new RangingRequest.Builder();
+        rangingResultCallback = new RttRangingResultCallback();
     }
 
     /**
      * Wi-Fi RTTに対応したAPの追加
      * @param aps アクセスポイントのリスト
      */
-    public void addAccessPoint(List<ScanResult> aps) {
+    public void addAccessPoint(@NonNull List<ScanResult> aps) {
+        builder = new RangingRequest.Builder();
         builder.addAccessPoints(aps);
     }
 
     /**
      * Wi-Fi RTTに対応したWi-Fi Aware peerの追加
-     * @param peer PeerHandle
+     * @param peers PeerHandle
      */
-    public void addPeer(PeerHandle peer) {
-        builder.addWifiAwarePeer(peer);
+    public void addPeer(@NonNull List<PeerHandle> peers) {
+
+        builder = new RangingRequest.Builder();
+        for (PeerHandle peer:peers) {
+            builder.addWifiAwarePeer(peer);
+        }
     }
 
     /**
-     * 距離測定
+     * 登録している測距相手を消去
      */
-    public void ranging() {
+    public void delete() {
+        builder = null;
+    }
+
+    /**
+     * 測距を開始
+     */
+    public void startRanging() {
 
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -73,40 +97,80 @@ public class RttManager {
             return;
         }
 
-        RangingRequest request = builder.build();
-
-        wifiRttManager.startRanging(request, executor, new RangingResultCallback() {
-            @Override
-            public void onRangingFailure(int code) {
-                Log.d("rtt_failure", "onRangingFailure" + code);
-            }
-
-            @Override
-            public void onRangingResults(@NonNull List<RangingResult> results) {
-                Log.d("rangingresults", "onRangingResults : " + results);
-                if (results.get(0).getStatus() == RangingResult.STATUS_SUCCESS) {
-                    resultList = results;
-                }
-            }
-        });
+        try {
+            RangingRequest rangingRequest = builder.build();
+            wifiRttManager.startRanging(rangingRequest, executor, rangingResultCallback);
+            ranging = true;
+        }catch (IndexOutOfBoundsException | NullPointerException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "通信相手が登録されていません", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
-     * 距離測定結果を取得
-     * @return ranging結果のlist
+     * 測距を停止
      */
-    public List<RangingResult> getResultList() {
-        return resultList;
+    public void stopRanging() {
+        ranging = false;
     }
 
     /**
-     * Wi-Fi Awareが利用可能かどうかのチェック
-     * @return 可能であればtrue
+     * 測距間隔を設定
+     * @param rangingRequestInterval 測距間隔(mm)（デフォルトは1000mm）
+     */
+    public void setRangingResultInterval(int rangingRequestInterval) {
+        this.rangingRequestInterval = rangingRequestInterval;
+    }
+
+    /**
+     * 測距時間を設定
+     * @param rangingTime 測距時間(mm)（デフォルトは60000mm）
+     */
+    public void setRangingTime(int rangingTime) {
+        this.rangingTime = rangingTime;
+    }
+
+    /**
+     * 設定した測距時間分のタイマーを開始
+     */
+    public void startTimer() {
+        HandlerThread handlerThread = new HandlerThread("Timer");
+        handlerThread.start();
+        new Handler(handlerThread.getLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ranging = false;
+            }
+        }, rangingTime);
+    }
+
+    /**
+     * Wi-Fi RTTが対応しているかどうか
+     * @return 対応している場合はtrue
      */
     public Boolean canUse() {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_RTT);
+    }
+
+    /**
+     * Wi-Fi RTTが使える状態かどうか
+     * @return 使える場合はtrue
+     */
+    public Boolean isAvailable() {
         return wifiRttManager.isAvailable();
     }
 
+    /**
+     * Map型の変数に格納したRangingResultLayoutを登録する
+     * @param rangingResultLayoutMap keyをMacアドレスもしくはPeerHandleにしたMap
+     */
+    public void setRangingResultLayoutMap(Map<String, RangingResultLayout> rangingResultLayoutMap) {
+        this.rangingResultLayoutMap = rangingResultLayoutMap;
+    }
+
+    /**
+     * Wi-Fi RTTの権限が変化した時の手続き
+     */
     class ChangeRttReceiver extends BroadcastReceiver {
 
         @Override
@@ -119,6 +183,60 @@ public class RttManager {
                 // wifi rttが使えない場合
                 System.out.println("No aware");
             }
+        }
+    }
+
+    /**
+     * Wi-Fi RTTによる測距が開始した時に呼び出されるコールバッククラス
+     */
+    private class RttRangingResultCallback extends RangingResultCallback {
+
+        private void queueNextRangingRequest() {
+            mRangeRequestDelayHandler.postDelayed(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            if (ranging) {
+                                startRanging();
+                            } else {
+                                Toast.makeText(context, "測距を停止しました", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }, rangingRequestInterval);
+        }
+
+        @Override
+        public void onRangingFailure(int code) {
+            Log.d(TAG, "onRangingFailure() code: " + code);
+            queueNextRangingRequest();
+        }
+
+        @Override
+        public void onRangingResults(@NonNull List<RangingResult> results) {
+            Log.d(TAG, "onRangingResults(): " + results);
+
+            for (RangingResult result : results) {
+                if (result.getStatus() == RangingResult.STATUS_SUCCESS && result.getMacAddress() != null) {
+                    RangingResultLayout layout = rangingResultLayoutMap.get(result.getMacAddress().toString());
+                    layout.setRangeText(String.valueOf(result.getDistanceMm()));
+                    layout.setRangeSdText(String.valueOf(result.getDistanceStdDevMm()));
+                    layout.setRssiText(String.valueOf(result.getRssi()));
+
+                } else if (result.getStatus() == RangingResult.STATUS_SUCCESS && result.getPeerHandle() != null) {
+                    RangingResultLayout layout = rangingResultLayoutMap.get(result.getPeerHandle().toString());
+                    layout.setRangeText(String.valueOf(result.getDistanceMm()));
+                    layout.setRangeSdText(String.valueOf(result.getDistanceStdDevMm()));
+                    layout.setRssiText(String.valueOf(result.getRssi()));
+
+                }else if (result.getStatus() == RangingResult.STATUS_RESPONDER_DOES_NOT_SUPPORT_IEEE80211MC){
+                    Log.d(TAG, "RangingResult failed (AP doesn't support IEEE802.11mc");
+
+                }else {
+                    Log.d(TAG, "RangingResult failed.");
+
+                }
+            }
+            queueNextRangingRequest();
         }
     }
 

@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import android.os.Handler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AwareManager {
@@ -40,6 +41,7 @@ public class AwareManager {
 
     private DiscoverySession msession;
 
+    private List<PeerHandle> peers;
 
 
     public AwareManager(Context context, Handler handler){
@@ -56,29 +58,31 @@ public class AwareManager {
 
     }
 
-
     /**
      *  Wi-Fi Awareの公開（基地局）
      */
     public void publish() {
         PublishConfig config = new PublishConfig.Builder()
-                .setServiceName("Aware_File_Share_Service_Name")
+                .setServiceName("Aware")
                 .build();
 
-        awareSession.publish(config, new DiscoverySessionCallback(){
-            @Override
-            public void onPublishStarted(PublishDiscoverySession session) {
-                super.onPublishStarted(session);
-                // 公開を開始した時
-                msession = session;
-            }
+        if (awareSession != null) {
+            awareSession.publish(config, new DiscoverySessionCallback(){
+                @Override
+                public void onPublishStarted(PublishDiscoverySession session) {
+                    super.onPublishStarted(session);
+                    // 公開を開始した時
+                    msession = session;
+                }
 
-            @Override
-            public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
-                super.onMessageReceived(peerHandle, message);
-                // メッセージを受信した時
-            }
-        }, null);
+                @Override
+                public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
+                    super.onMessageReceived(peerHandle, message);
+                    // メッセージを受信した時
+                    Toast.makeText(context, "Message Received" + message, Toast.LENGTH_SHORT).show();
+                }
+            }, null);
+        }
     }
 
     /**
@@ -86,7 +90,7 @@ public class AwareManager {
      */
     public void subscribe() {
         SubscribeConfig config = new SubscribeConfig.Builder()
-                .setServiceName("Aware_File_Share_Service_Name")
+                .setServiceName("Aware")
                 .build();
 
         awareSession.subscribe(config, new DiscoverySessionCallback() {
@@ -95,11 +99,16 @@ public class AwareManager {
                 super.onSubscribeStarted(session);
                 // 登録開始時
                 msession = session;
+                if (peers == null) { peers = new ArrayList<>(); }
             }
 
             @Override
             public void onServiceDiscovered(PeerHandle peerHandle, byte[] serviceSpecificInfo, List<byte[]> matchFilter) {
                 super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
+                // 通信相手を見つけた時
+                if (!peers.contains(peerHandle)) { peers.add(peerHandle);}
+                System.out.println(peers);
+                Toast.makeText(context, "Service discoverd" + peerHandle.toString() + "\t sending message now", Toast.LENGTH_SHORT).show();
             }
         }, null);
     }
@@ -118,6 +127,51 @@ public class AwareManager {
      */
     public Boolean isAvailable() {
         return wifiAwareManager.isAvailable();
+    }
+
+    /**
+     * Wi-Fi Awareにアタッチ
+     */
+    public void connect() {
+        if (awareSession == null) {
+            wifiAwareManager.attach(new MyAttachCallback(), mhandler);
+        }
+    }
+
+    /**
+     * Wi-Fi Awareセッションを閉じる
+     */
+    public void close() {
+        if (awareSession != null) {
+            awareSession.close();
+            awareSession = null;
+            peers = null;
+            Toast.makeText(context, "sessionを閉じました", Toast.LENGTH_SHORT).show();
+        }else {
+            Toast.makeText(context, "sessionが開かれていません", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Wi-Fi Awareに再度アタッチ
+     */
+    public void reconnect() {
+        if (awareSession == null) {
+            wifiAwareManager.attach(new MyAttachCallback(), mhandler);
+        }else {
+            awareSession.close();
+            awareSession = null;
+            peers = null;
+            wifiAwareManager.attach(new MyAttachCallback(), mhandler);
+        }
+    }
+
+    /**
+     * peerhandleのリストを取得
+     * @return peerhandleのリスト
+     */
+    public List<PeerHandle> getPeers() {
+        return peers;
     }
 
     /**

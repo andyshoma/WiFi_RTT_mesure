@@ -144,7 +144,7 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="WiFiAware設定"
+        android:text="モード選択"
         android:textColor="#EDAD0B"
         android:textSize="30sp" />
 
@@ -161,11 +161,11 @@
         tools:visibility="visible">
 
         <Button
-            android:id="@+id/publish"
+            android:id="@+id/ap"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#EDAD0B"
-            android:text="publish"
+            android:text="基地局"
             android:textColor="#FFFFFF" />
 
         <Space
@@ -174,55 +174,11 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/subscribe"
+            android:id="@+id/sta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#EDAD0B"
-            android:text="subscribe"
-            android:textColor="#FFFFFF" />
-
-    </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="30sp" />
-
-    <TextView
-        android:id="@+id/textView12"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="モード選択"
-        android:textColor="#009250"
-        android:textSize="30sp" />
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="10sp" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/ranging"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#009250"
-            android:text="ranging"
-            android:textColor="#FFFFFF" />
-
-        <Space
-            android:layout_width="20sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/localize"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#009250"
-            android:text="localize"
+            android:text="移動端末"
             android:textColor="#FFFFFF" />
 
     </LinearLayout>

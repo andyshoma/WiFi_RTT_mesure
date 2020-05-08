@@ -1,4 +1,4 @@
-package com.example.wi_fi_rtt_mesure;
+package com.example.wi_fi_rtt_mesure.was;
 
 import android.Manifest;
 import android.app.Activity;
@@ -18,11 +18,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.example.wi_fi_rtt_mesure.R;
+import com.example.wi_fi_rtt_mesure.SaveFile;
 
-import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
