@@ -18,36 +18,40 @@ import android.net.wifi.aware.SubscribeDiscoverySession;
 import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.aware.WifiAwareSession;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 import android.os.Handler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AwareManager {
 
-    /**
-     * abstract内で初期化する変数
-     */
+    private final static String TAG = "AwareManager.java";
+    private final static String CONNECT = "connect";
+
     private Context context;
     private Handler mhandler;
 
-    /**
-     * Wi-Fi Aware関連の変数
-     */
     private WifiAwareManager wifiAwareManager;
     private WifiAwareSession awareSession;
 
     private DiscoverySession msession;
 
     private List<PeerHandle> peers;
+    private Map<String, String> peerDeviceMap;
+
+    private String deviceId;
 
 
     public AwareManager(Context context, Handler handler){
 
         this.context = context;
         mhandler = handler;
+        peerDeviceMap = new HashMap<>();
 
         wifiAwareManager = (WifiAwareManager) context.getSystemService(Context.WIFI_AWARE_SERVICE);
 
@@ -79,7 +83,8 @@ public class AwareManager {
                 public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
                     super.onMessageReceived(peerHandle, message);
                     // メッセージを受信した時
-                    Toast.makeText(context, "Message Received" + message, Toast.LENGTH_SHORT).show();
+                    msession.sendMessage(peerHandle, 2, deviceId.getBytes());
+                    Toast.makeText(context, "Message Received" + new String(message), Toast.LENGTH_SHORT).show();
                 }
             }, null);
         }
@@ -107,8 +112,19 @@ public class AwareManager {
                 super.onServiceDiscovered(peerHandle, serviceSpecificInfo, matchFilter);
                 // 通信相手を見つけた時
                 if (!peers.contains(peerHandle)) { peers.add(peerHandle);}
+                msession.sendMessage(peerHandle, 1, CONNECT.getBytes());
                 System.out.println(peers);
-                Toast.makeText(context, "Service discoverd" + peerHandle.toString() + "\t sending message now", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onMessageReceived(PeerHandle peerHandle, byte[] message) {
+                super.onMessageReceived(peerHandle, message);
+                // メッセージを受信した時
+                String device = new String(message);
+                if (!peerDeviceMap.containsValue(device)) {
+                    peerDeviceMap.put(peerHandle.toString(), device);
+                    Toast.makeText(context, "Message Received" + device, Toast.LENGTH_SHORT).show();
+                }
             }
         }, null);
     }
@@ -146,6 +162,7 @@ public class AwareManager {
             awareSession.close();
             awareSession = null;
             peers = null;
+            peerDeviceMap.clear();
             Toast.makeText(context, "sessionを閉じました", Toast.LENGTH_SHORT).show();
         }else {
             Toast.makeText(context, "sessionが開かれていません", Toast.LENGTH_SHORT).show();
@@ -172,6 +189,28 @@ public class AwareManager {
      */
     public List<PeerHandle> getPeers() {
         return peers;
+    }
+
+    /**
+     * 自端末の端末番号の設定
+     * @param deviceId 自端末の端末番号
+     */
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    /**
+     * PeerHandleから通信相手の端末番号を検索し取得
+     * @param peer 登録されている相手のpeerhandleの文字列
+     * @return peerhandleに紐づけられている端末番号を返す。存在しない場合はnull
+     */
+    public String getPeerDeviceId(String peer) {
+        if (peerDeviceMap.containsKey(peer)) {
+            return peerDeviceMap.get(peer);
+        } else {
+            Log.d(TAG, "peerhandleが登録されていません");
+            return null;
+        }
     }
 
     /**

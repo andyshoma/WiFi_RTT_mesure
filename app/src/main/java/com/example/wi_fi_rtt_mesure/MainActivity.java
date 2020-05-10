@@ -180,6 +180,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
+        awareManager.setDeviceId(id);
+
         if (view.getId() == R.id.ap) {
             // 基地局ボタン（publish）が押された場合
             onCallAp(id);

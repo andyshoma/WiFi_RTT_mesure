@@ -38,6 +38,9 @@ public class RttManager {
     private RttRangingResultCallback rangingResultCallback;
     final Handler mRangeRequestDelayHandler = new Handler();
 
+    private Handler rangingHandler;
+    private Runnable rangingRunnable;
+
     private int rangingRequestInterval = 1000;
     private int rangingTime = 60000;
     private Boolean ranging = false;
@@ -112,6 +115,9 @@ public class RttManager {
      */
     public void stopRanging() {
         ranging = false;
+        if (rangingHandler != null) {
+            rangingHandler.removeCallbacks(rangingRunnable);
+        }
     }
 
     /**
@@ -136,12 +142,16 @@ public class RttManager {
     public void startTimer() {
         HandlerThread handlerThread = new HandlerThread("Timer");
         handlerThread.start();
-        new Handler(handlerThread.getLooper()).postDelayed(new Runnable() {
+
+        rangingRunnable = new Runnable() {
             @Override
             public void run() {
                 ranging = false;
             }
-        }, rangingTime);
+        };
+
+        rangingHandler = new Handler(handlerThread.getLooper());
+        rangingHandler.postDelayed(rangingRunnable, rangingTime);
     }
 
     /**
