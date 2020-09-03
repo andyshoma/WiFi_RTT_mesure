@@ -3,6 +3,21 @@
     <string name="title_activity_ranging">RangingActivity</string>
     <string name="title_activity_localize">LocalizeActivity</string>
 
+    <string name="wifi_conf">Wi-Fi 確認</string>
+    <string name="wifi_support">Android Wifi supports : </string>
+    <string name="wifi_availavle">Wi-Fi RTT is available : </string>
+    <string name="configuration">ファイル設定</string>
+    <string name="mode">モード選択</string>
+    <string name="N">N</string>
+    <string name="S">S</string>
+    <string name="E">E</string>
+    <string name="W">W</string>
+    <string name="station">基地局</string>
+    <string name="terminal">端末</string>
+    <string name="geomagnetic">地磁気</string>
+    <string name="file">ファイル選択</string>
+
+
     <string name="ranging_interval">Ranging Interval</string>
     <string name="measure_time">Measure Time</string>
     <string name="ms">ms</string>
@@ -14,6 +29,22 @@
     <string name="rssi">RSSI</string>
     <string name="successes_in_burst">Successes in burst</string>
 
+    <string name="orientation">Orientation</string>
+    <string name="yaw">yaw</string>
+    <string name="pitch">pitch</string>
+    <string name="roll">roll</string>
+
+    <string name="magnetic">Magnetic</string>
+    <string name="axisx">X-axis</string>
+    <string name="axisy">Y-axis</string>
+    <string name="axisz">Z-axis</string>
+
+    <string name="point_select">point select</string>
+    <string name="savefile">save file</string>
+    <string name="start">start</string>
+    <string name="stop">stop</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
