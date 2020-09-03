@@ -1,11 +1,13 @@
 package com.example.wi_fi_rtt_mesure.wifi;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.rtt.RangingRequest;
@@ -13,11 +15,16 @@ import android.net.wifi.rtt.RangingResult;
 import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
 import android.os.HandlerThread;
+import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -30,6 +37,7 @@ public class RttManager {
     private static final String TAG = "RangingResult";
 
     private Context context;
+    private Activity activity;
     private Executor executor;
 
     private WifiRttManager wifiRttManager;
@@ -41,7 +49,11 @@ public class RttManager {
     private Handler rangingHandler;
     private Runnable rangingRunnable;
 
-    private int rangingRequestInterval = 1000;
+    private Map<String, String> partnerIdMap;
+    private ArrayList<String> idList;
+    private Uri uri;
+
+    private int rangingRequestInterval = 100;
     private int rangingTime = 60000;
     private Boolean ranging = false;
 
@@ -179,6 +191,35 @@ public class RttManager {
     }
 
     /**
+     * ファイルに書き込むためのパラメータの設定
+     * @param partnerIdMap PeerHandleに対応する端末番号のMap
+     * @param idList 端末番号のリスト
+     * @param uri 保存先のuri
+     */
+    public void setSaveParametor(Map<String, String> partnerIdMap, ArrayList<String> idList, Uri uri, Activity activity) {
+        this.partnerIdMap = partnerIdMap;
+        this.idList = idList;
+        this.uri = uri;
+        this.activity = activity;
+    }
+
+    /**
+     * ファイルへの書き込み
+     * @param text 書き込む内容
+     */
+    private void save(String text) {
+        try {
+            ParcelFileDescriptor pfd = activity.getContentResolver().openFileDescriptor(uri, "wa");
+            FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
+            fileOutputStream.write(text.getBytes());
+            fileOutputStream.close();
+            pfd.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Wi-Fi RTTの権限が変化した時の手続き
      */
     class ChangeRttReceiver extends BroadcastReceiver {
@@ -225,27 +266,48 @@ public class RttManager {
         public void onRangingResults(@NonNull List<RangingResult> results) {
             Log.d(TAG, "onRangingResults(): " + results);
 
+            Map<String, String> resultMap = new HashMap<>();
+
             for (RangingResult result : results) {
                 if (result.getStatus() == RangingResult.STATUS_SUCCESS && result.getMacAddress() != null) {
                     RangingResultLayout layout = rangingResultLayoutMap.get(result.getMacAddress().toString());
                     layout.setRangeText(String.valueOf(result.getDistanceMm()));
                     layout.setRangeSdText(String.valueOf(result.getDistanceStdDevMm()));
                     layout.setRssiText(String.valueOf(result.getRssi()));
+                    String data = String.valueOf(result.getDistanceMm()) + ',' + result.getDistanceStdDevMm() + ',' +
+                            result.getRssi() + ',' + result.getRangingTimestampMillis() + ',';
+                    resultMap.put(result.getMacAddress().toString(), data);
 
                 } else if (result.getStatus() == RangingResult.STATUS_SUCCESS && result.getPeerHandle() != null) {
                     RangingResultLayout layout = rangingResultLayoutMap.get(result.getPeerHandle().toString());
                     layout.setRangeText(String.valueOf(result.getDistanceMm()));
                     layout.setRangeSdText(String.valueOf(result.getDistanceStdDevMm()));
                     layout.setRssiText(String.valueOf(result.getRssi()));
-
+                    String data = String.valueOf(result.getDistanceMm()) + ',' + result.getDistanceStdDevMm() + ',' +
+                            result.getRssi() + ',' + result.getRangingTimestampMillis() + ',';
+                    resultMap.put(partnerIdMap.get(result.getPeerHandle().toString()), data);
                 }else if (result.getStatus() == RangingResult.STATUS_RESPONDER_DOES_NOT_SUPPORT_IEEE80211MC){
                     Log.d(TAG, "RangingResult failed (AP doesn't support IEEE802.11mc");
 
                 }else {
+                    String data = "Ranging Failure" + ",,,,";
+                    if (result.getMacAddress() != null) {
+                        resultMap.put(result.getMacAddress().toString(), data);
+                    } else if(result.getPeerHandle() != null) {
+                        resultMap.put(partnerIdMap.get(result.getPeerHandle().toString()), data);
+                    }
                     Log.d(TAG, "RangingResult failed.");
 
                 }
             }
+
+            StringBuilder builder = new StringBuilder();
+            for (String id : idList) {
+                builder.append(resultMap.get(id));
+            }
+            String text = builder.toString().replaceAll(",$", "\n");
+            save(text);
+
             queueNextRangingRequest();
         }
     }

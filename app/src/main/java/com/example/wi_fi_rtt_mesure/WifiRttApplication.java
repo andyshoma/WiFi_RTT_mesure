@@ -2,6 +2,7 @@ package com.example.wi_fi_rtt_mesure;
 
 import android.app.Application;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Handler;
 
 import com.example.wi_fi_rtt_mesure.wifi.AwareManager;
@@ -11,6 +12,8 @@ public class WifiRttApplication extends Application {
 
     private AwareManager awareManager;
     private RttManager rttManager;
+
+    private Uri uri;
 
     @Override
     public void onCreate() {
@@ -31,4 +34,13 @@ public class WifiRttApplication extends Application {
     public RttManager getRttManager() {
         return rttManager;
     }
+
+    public void setUri(Uri uri) {
+        this.uri = uri;
+    }
+
+    public Uri getUri() {
+        return uri;
+    }
+
 }
