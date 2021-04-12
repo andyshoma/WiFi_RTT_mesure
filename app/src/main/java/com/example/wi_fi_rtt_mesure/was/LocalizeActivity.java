@@ -64,7 +64,7 @@ public class LocalizeActivity extends AppCompatActivity {
         context = getApplicationContext();
 
         path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/wifirtt/";
-        saveFile = new SaveFile(path, context);
+//        saveFile = new SaveFile(path, context);
         verifyStoragePermissions(this);
 
         Intent intent = this.getIntent();
@@ -119,7 +119,6 @@ public class LocalizeActivity extends AppCompatActivity {
                         wifiManager.subscriber();
                     }
                     String filename = file_edit.getText().toString();
-                    saveFile.setFilename(filename);
                     saveFile.write("distanceMm,distanceStdDevMm,rssi,timestamp,deviceID");
                 }
             }

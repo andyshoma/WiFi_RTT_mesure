@@ -56,7 +56,6 @@ public class RangingActivity extends AppCompatActivity {
         context = getApplicationContext();
 
         path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/wifirtt/";
-        saveFile = new SaveFile(path, context);
         verifyStoragePermissions(this);
 
         Intent intent = this.getIntent();
@@ -117,7 +116,6 @@ public class RangingActivity extends AppCompatActivity {
                         wifiManager.subscriber();
                     }
                     String filename = file_text.getText().toString();
-                    saveFile.setFilename(filename);
                     saveFile.write("distanceMm,distanceStdDevMm,rssi,timestamp");
                 }
             }
