@@ -82,7 +82,7 @@
         android:layout_height="0sp"
         android:layout_weight="5"
         android:gravity="center"
-        android:text="端末番号入力"
+        android:text="@string/input_terminal_number"
         android:layout_gravity="center"
         android:textColor="#007AB7"
         android:textSize="30sp" />
@@ -93,7 +93,7 @@
         android:layout_height="0sp"
         android:layout_weight="5"
         android:layout_gravity="center"
-        android:hint="番号を入力してください"
+        android:hint="@string/input_number"
         android:textSize="15sp"></EditText>
 
     <Space
@@ -127,7 +127,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="6"
             android:gravity="right"
-            android:hint="基地局との距離を入力してください"
+            android:hint="@string/input_distance"
             android:textSize="15sp"/>
 
         <TextView
@@ -135,7 +135,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_gravity="center"
-            android:text="m"
+            android:text="@string/meter"
             android:textSize="20sp"/>
 
         <Space

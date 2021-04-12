@@ -200,6 +200,14 @@ public class AwareManager {
     }
 
     /**
+     * 自端末の端末番号を取得
+     * @return 自端末の端末番号
+     */
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    /**
      * PeerHandleから通信相手の端末番号を検索し取得
      * @param peer 登録されている相手のpeerhandleの文字列
      * @return peerhandleに紐づけられている端末番号を返す。存在しない場合はnull

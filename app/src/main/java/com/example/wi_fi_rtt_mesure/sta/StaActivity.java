@@ -1,13 +1,16 @@
 package com.example.wi_fi_rtt_mesure.sta;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.net.wifi.aware.PeerHandle;
 import android.os.Handler;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -21,6 +24,9 @@ import com.example.wi_fi_rtt_mesure.wifi.RttManager;
 import java.util.List;
 
 public class StaActivity extends AppCompatActivity{
+
+    private final static int CREATE_DOCUMENT_REQUEST = 43;
+    private final static String TAG = "MainActivity.java";
 
     private Context context;
     private WifiRttApplication application;
@@ -54,6 +60,25 @@ public class StaActivity extends AppCompatActivity{
         awareManager.close();
         rttManager.delete();
         finish();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        super.onActivityResult(requestCode, resultCode, resultData);
+
+        if (requestCode == CREATE_DOCUMENT_REQUEST && resultCode == Activity.RESULT_OK) {
+            if (resultData.getData() != null) {
+
+                final int takeFlags = getIntent().getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                Uri uri = resultData.getData();
+                getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                application.setUri(uri);
+                Log.d(TAG, uri.toString());
+
+                Toast.makeText(context, "ファイルを作成しました", Toast.LENGTH_SHORT).show();
+
+            }
+        }
     }
 
 }

@@ -3,10 +3,15 @@
     <string name="title_activity_ranging">RangingActivity</string>
     <string name="title_activity_localize">LocalizeActivity</string>
 
+    <!-- activity_main -->
     <string name="wifi_conf">Wi-Fi 確認</string>
     <string name="wifi_support">Android Wifi supports : </string>
     <string name="wifi_availavle">Wi-Fi RTT is available : </string>
+    <string name="input_terminal_number">端末番号入力</string>
+    <string name="input_number">番号を入力してください</string>
     <string name="configuration">ファイル設定</string>
+    <string name="input_distance">基地局との距離を入力してください</string>
+    <string name="meter">m</string>
     <string name="mode">モード選択</string>
     <string name="N">N</string>
     <string name="S">S</string>
@@ -17,32 +22,53 @@
     <string name="geomagnetic">地磁気</string>
     <string name="file">ファイル選択</string>
 
-
+    <!-- fragment_ranging -->
     <string name="ranging_interval">Ranging Interval</string>
     <string name="measure_time">Measure Time</string>
+    <string name="measure_time_hint">60000</string>
     <string name="ms">ms</string>
+    <string name="make_file">Make File</string>
     <string name="ranging_start">Ranging Start</string>
     <string name="ranging_stop">Ranging Stop</string>
+    <string name="plus">+1</string>
+    <string name="minus">-1</string>
+    <string name="truth">distance</string>
+    <string name="m">m</string>
 
+    <!-- inflate_results -->
     <string name="range">Range</string>
     <string name="range_sd">RangeSD</string>
     <string name="rssi">RSSI</string>
     <string name="successes_in_burst">Successes in burst</string>
 
+    <!-- magnetic_activity -->
     <string name="orientation">Orientation</string>
     <string name="yaw">yaw</string>
     <string name="pitch">pitch</string>
     <string name="roll">roll</string>
-
     <string name="magnetic">Magnetic</string>
     <string name="axisx">X-axis</string>
     <string name="axisy">Y-axis</string>
     <string name="axisz">Z-axis</string>
-
+    <string name="cc1f">CC1F</string>
+    <string name="cc5f">CC5F</string>
     <string name="point_select">point select</string>
     <string name="savefile">save file</string>
     <string name="start">start</string>
     <string name="stop">stop</string>
+
+    <!-- direction spinner items -->
+    <string-array name="direction">
+        <item></item>
+        <item>N</item>
+        <item>NE</item>
+        <item>E</item>
+        <item>SE</item>
+        <item>S</item>
+        <item>SW</item>
+        <item>W</item>
+        <item>NW</item>
+    </string-array>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -3,6 +3,7 @@ package com.example.wi_fi_rtt_mesure.Magnetic;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -31,6 +32,7 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
     private Activity activity;
 
     private String deviceID;
+    private int mapFloar = 5;
 
     private int dataID = 0;
 
@@ -41,6 +43,9 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
     private TextView magXaxisText;
     private TextView magYaxisText;
     private TextView magZaxisText;
+
+    private Button cc1fButton;
+    private Button cc5fButton;
 
     private boolean save_flag = false;
 
@@ -73,6 +78,12 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
         magXaxisText = findViewById(R.id.mag_yaw);
         magYaxisText = findViewById(R.id.mag_pitch);
         magZaxisText = findViewById(R.id.mag_roll);
+
+        cc1fButton = findViewById(R.id.cc1f);
+        cc1fButton.setOnClickListener(this);
+
+        cc5fButton = findViewById(R.id.cc5f);
+        cc5fButton.setOnClickListener(this);
 
         Button selectButton = findViewById(R.id.point_select);
         selectButton.setOnClickListener(this);
@@ -162,7 +173,13 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.point_select) {
+        if (view.getId() == R.id.cc1f) {
+            onCallCC1F();
+
+        } else if (view.getId() == R.id.cc5f) {
+            onCallCC5F();
+
+        } else if (view.getId() == R.id.point_select) {
             onCallSelect();
 
         } else if (view.getId() == R.id.start) {
@@ -191,11 +208,28 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+    private void onCallCC1F() {
+        if (mapFloar != 1) {
+            mapFloar = 1;
+            cc1fButton.setBackgroundColor(Color.rgb(0, 134, 171));
+            cc5fButton.setBackgroundColor(Color.rgb(151, 211, 227));
+        }
+    }
+
+    private void onCallCC5F() {
+        if (mapFloar != 5) {
+            mapFloar = 5;
+            cc5fButton.setBackgroundColor(Color.rgb(0, 134, 171));
+            cc1fButton.setBackgroundColor(Color.rgb(151, 211, 227));
+        }
+    }
+
     /**
      * point selectボタンが押されたとき
      */
     private void onCallSelect() {
         Intent intent = new Intent(context, MapsActivity.class);
+        intent.putExtra("map", mapFloar);
         startActivity(intent);
     }
 
