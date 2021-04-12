@@ -1,4 +1,4 @@
-package com.example.wi_fi_rtt_mesure;
+package com.example.wi_fi_rtt_mesure.was;
 
 import android.Manifest;
 import android.app.Activity;
@@ -12,6 +12,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -20,28 +22,33 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.example.wi_fi_rtt_mesure.R;
+import com.example.wi_fi_rtt_mesure.SaveFile;
 
-import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class RangingActivity extends AppCompatActivity {
+public class LocalizeActivity extends AppCompatActivity {
 
-    Context context;
+    public Context context;
+    public WifiManager wifiManager;
+    public SaveFile saveFile;
+
+    public String deviceID;
+    public String path;
     private Handler handler;
-    private boolean flag = false;
-    private final static int measureTime = 120000;
-    private final static int interval = 2000;
+    private final static int measureTime = 60000;
+    private final static int interval = 10000;
     private Timer measureTimer;
-    private WifiManager wifiManager;
 
-    private SaveFile saveFile;
-    private boolean calOrDis;
-    private String path;
-    private TextView counter;
+    private Integer rp_num;
 
-    private String mode;
+
+    public EditText file_edit;
+    public Spinner peerSpinner;
+    public TextView counter;
+    public String mode;
+    public EditText rp_edit;
 
     private static final int REQUEST_EXTERNAL_STORAGE_CODE = 0x01;
     private static String[] mPermissions = {
@@ -52,7 +59,7 @@ public class RangingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ranging);
+        setContentView(R.layout.activity_localize);
 
         context = getApplicationContext();
 
@@ -61,8 +68,7 @@ public class RangingActivity extends AppCompatActivity {
         verifyStoragePermissions(this);
 
         Intent intent = this.getIntent();
-
-        String deviceID = intent.getStringExtra("DEVICEID");
+        deviceID = intent.getStringExtra("DEVICEID");
         TextView deviceID_text = findViewById(R.id.deviceId);
         deviceID_text.setText(deviceID);
 
@@ -70,44 +76,39 @@ public class RangingActivity extends AppCompatActivity {
         TextView mode_text = findViewById(R.id.mode);
         mode_text.setText(mode);
 
-        TextView result_distance = findViewById(R.id.result_distance);
-
-        final EditText file_text = findViewById(R.id.filename);
-
         Button back_button = findViewById(R.id.back);
         Button done_button = findViewById(R.id.done);
         Button start_button = findViewById(R.id.start);
         Button stop_button = findViewById(R.id.stop);
 
-        Spinner peerSpinner = findViewById(R.id.peerSpinner);
+        counter = findViewById(R.id.counter);
+
+        file_edit = findViewById(R.id.filename);
+
+        TextView range_text = findViewById(R.id.result_distance);
+
+        peerSpinner = findViewById(R.id.peerSpinner);
+
+        rp_edit = findViewById(R.id.rp_num);
 
         wifiManager = new WifiManager(context, handler, deviceID, peerSpinner);
 
         //distanceの表示のためのTextViewの追加
-        wifiManager.setText(result_distance);
+        wifiManager.setText(range_text);
 
-        /***
-         * backボタンを押した時
-         *      awaresessionを閉じてmainに戻る
-         */
         back_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wifiManager.close();
                 Intent intent = new Intent();
                 setResult(RESULT_OK, intent);
                 finish();
             }
         });
 
-        /***
-         * doneボタンを押した時
-         *      filenameをセットする
-         */
         done_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(file_text.getText() != null) {
+                if(file_edit.getText() != null) {
                     /*
                     モード選択結果の反映
                     publishもしくはsubscribe
@@ -117,35 +118,53 @@ public class RangingActivity extends AppCompatActivity {
                     }else if(mode.equals("subscribe")){
                         wifiManager.subscriber();
                     }
-                    String filename = file_text.getText().toString();
+                    String filename = file_edit.getText().toString();
                     saveFile.setFilename(filename);
-                    saveFile.write("distanceMm,distanceStdDevMm,rssi,timestamp");
+                    saveFile.write("distanceMm,distanceStdDevMm,rssi,timestamp,deviceID");
                 }
             }
         });
 
-        /***
-         * startボタンを押した時
-         *      rangingをstartさせる
-         */
         start_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (wifiManager.checkRanging()) {
-                    wifiManager.makeRequest();
-                    CreateDialog();
+                if (rp_num != null){
+                    saveFile.write(String.valueOf(rp_num));
+                    if (wifiManager.checkRanging()) {
+                        CreateDialog();
+                    }
+                }else{
+                    Toast.makeText(context, "観測番号が入力されていません", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 
-        /***
-         * stopボタンを押した時
-         *      rangingをstop(一時停止)させる
-         */
         stop_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+            }
+        });
+
+        rp_edit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                try{
+                    rp_num = Integer.parseInt(s.toString());
+                }catch (NumberFormatException e){
+                    Toast.makeText(context, "数字を入力してください", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -196,7 +215,7 @@ public class RangingActivity extends AppCompatActivity {
         measureTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                wifiManager.ranging(saveFile);
+                wifiManager.connectRtt(saveFile);
             }
         }, 0, interval);
     }
@@ -205,7 +224,7 @@ public class RangingActivity extends AppCompatActivity {
         if(measureTimer != null){
             measureTimer.cancel();
             measureTimer = null;
-            //counter.setText(wifiManager.count_success + "/" + wifiManager.countTry + "回");
+            counter.setText(wifiManager.count_success + "/" + wifiManager.countTry + "回");
         }
     }
 

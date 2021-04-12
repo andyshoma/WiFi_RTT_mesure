@@ -1,14 +1,12 @@
-package com.example.wi_fi_rtt_mesure;
+package com.example.wi_fi_rtt_mesure.was;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.aware.AttachCallback;
-import android.net.wifi.aware.DiscoverySession;
 import android.net.wifi.aware.DiscoverySessionCallback;
 import android.net.wifi.aware.PeerHandle;
 import android.net.wifi.aware.PublishConfig;
@@ -23,8 +21,6 @@ import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
 
 import android.os.Handler;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -32,13 +28,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.Serializable;
-import java.nio.ByteBuffer;
+import com.example.wi_fi_rtt_mesure.SaveFile;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Executor;
 
 public class WifiManager {
@@ -267,17 +262,22 @@ public class WifiManager {
         }
 
         countTry++;
-        for (PeerHandle peer : peerHandles) {
-            builder.addWifiAwarePeer(peer);
+        RangingRequest.Builder builder1 = new RangingRequest.Builder();
+
+        if(peerHandles != null){
+            for (PeerHandle peer : peerHandles) {
+                builder1.addWifiAwarePeer(peer);
+            }
+            request = builder1.build();
+        }else{
+            return;
         }
-        request = builder.build();
 
         wifiRttManager.startRanging(request, executor, new RangingResultCallback() {
 
             @Override
             public void onRangingFailure(int code) {
                 Log.d("rtt_failure", "onRangingFailure" + code);
-                saveFile.write("rangingFailure");
             }
 
             @Override
@@ -286,12 +286,10 @@ public class WifiManager {
 
                 for (RangingResult result : results) {
                     if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
-                        /*count_success++;
-                        result_distance.setText(result.getDistanceMm() + " Mm");
-                        String str = peerToId.get(result.getPeerHandle()) + "," + result.getDistanceMm() + "," + result.getDistanceStdDevMm() + "," + result.getRssi() + "," + result.getRangingTimestampMillis();
-                        saveFile.write(str);*/
-                    } else {
-                        saveFile.write("STATUS_FAILURE");
+                        count_success++;
+                        result_distance.setText(result.getDistanceMm() + " ");
+                        String str =  result.getDistanceMm() + "," + result.getDistanceStdDevMm() + "," + result.getRssi() + "," + result.getRangingTimestampMillis() + "," + peerToId.get(result.getPeerHandle());
+                        saveFile.write(str);
                     }
                 }
             }
@@ -400,6 +398,20 @@ public class WifiManager {
             return;
         }
         request = builder.build();
+    }
+
+    public void makeSomeRequest(){
+        builder = new RangingRequest.Builder();
+
+        if(peerHandles != null){
+            for (PeerHandle peer : peerHandles) {
+                builder.addWifiAwarePeer(peer);
+            }
+            request = builder.build();
+        }else{
+            return;
+        }
+
     }
 
     public void setText(TextView result_distance){
