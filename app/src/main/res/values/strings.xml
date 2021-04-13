@@ -14,6 +14,18 @@
     <string name="terminal">Terminal</string>
     <string name="geomagnetic">Magnetism</string>
 
+    <!-- fragment_connect -->
+    <string name="terminal_mode">Terminal Mode</string>
+    <string name="device_id">device ID : </string>
+    <string name="wifi_aware">Wi-Fi Aware Connection</string>
+    <string name="connect">connect</string>
+    <string name="close">close</string>
+    <string name="reconnect">reconnect</string>
+    <string name="ap_connection">Access Point Connection</string>
+    <string name="search">search</string>
+    <string name="add">add</string>
+    <string name="ranging">ranging</string>
+
     <!-- fragment_ranging -->
     <string name="ranging_interval">Ranging Interval</string>
     <string name="measure_time">Measure Time</string>

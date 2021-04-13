@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="移動端末モード"
+        android:text="@string/terminal_mode"
         android:textSize="40dp"
         android:textColor="#007AB7"/>
 
@@ -31,7 +31,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="端末番号 : "
+            android:text="@string/device_id"
             android:textSize="20dp"
             android:textColor="#AAAAAA"/>
 
@@ -52,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="端末通信"
+        android:text="@string/wifi_aware"
         android:textSize="30dp"
         android:textColor="#007AB7"/>
 
@@ -66,7 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="#007AB7"
-        android:text="通信開始"
+        android:text="@string/connect"
         android:textColor="#FFFFFF"/>
 
     <Space
@@ -84,7 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#7379AE"
-            android:text="接続を閉じる"
+            android:text="@string/close"
             android:textColor="#FFFFFF"/>
 
         <Space
@@ -96,7 +96,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#7379AE"
-            android:text="再接続"
+            android:text="@string/reconnect"
             android:textColor="#FFFFFF"/>
 
     </LinearLayout>
@@ -109,7 +109,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="基地局通信"
+        android:text="@string/ap_connection"
         android:textSize="30dp"
         android:textColor="#3261AB"/>
 
@@ -123,7 +123,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="#3261AB"
-        android:text="探索"
+        android:text="@string/search"
         android:textColor="#FFFFFF"/>
 
     <Space
@@ -150,7 +150,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#7379AE"
-            android:text="追加"
+            android:text="@string/add"
             android:textColor="#FFFFFF"/>
 
         <Space
@@ -162,7 +162,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#DA5019"
-            android:text="測距"
+            android:text="@string/ranging"
             android:textColor="#FFFFFF"/>
 
     </LinearLayout>
