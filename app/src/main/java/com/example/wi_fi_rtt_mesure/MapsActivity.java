@@ -188,11 +188,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void onCallStart() {
-        Toast.makeText(context, "ファイルへの出力を開始します", Toast.LENGTH_SHORT).show();
-        String text = "id" + ',' + "yaw" + ',' + "pitch" + ',' + "roll" + ',' +
-                "magX" + ',' + "magY" + ',' + "magZ" + ',' + "latitude" + ',' + "longitude" + ',' + "timestamp" + '\n';
-        save(application.getUri(), text);
-        save_flag = true;
+
+        if (application.getUri() != null) {
+            application.getUri();
+            Toast.makeText(context, "ファイルへの出力を開始します", Toast.LENGTH_SHORT).show();
+            String text = "id" + ',' + "yaw" + ',' + "pitch" + ',' + "roll" + ',' +
+                    "magX" + ',' + "magY" + ',' + "magZ" + ',' + "latitude" + ',' + "longitude" + ',' + "timestamp" + '\n';
+            save(application.getUri(), text);
+            save_flag = true;
+        }else {
+            Toast.makeText(context, "保存するファイルを作成してください", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void onCallStop() {

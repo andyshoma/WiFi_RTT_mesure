@@ -56,6 +56,7 @@
     <string name="savefile">save file</string>
     <string name="start">start</string>
     <string name="stop">stop</string>
+    <string name="make_mag">make file</string>
 
     <!-- direction spinner items -->
     <string-array name="direction">

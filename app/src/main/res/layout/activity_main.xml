@@ -94,127 +94,8 @@
         android:layout_weight="5"
         android:layout_gravity="center"
         android:hint="@string/input_number"
-        android:textSize="15sp"></EditText>
+        android:textSize="15sp"/>
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0sp"
-        android:layout_weight="2"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="0sp"
-        android:layout_weight="5"
-        android:gravity="center"
-        android:text="@string/configuration"
-        android:textSize="30sp"
-        android:textColor="#007AB7"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0sp"
-        android:layout_weight="5"
-        android:orientation="horizontal">
-
-        <Space
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
-
-        <EditText
-            android:id="@+id/distance"
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="6"
-            android:gravity="right"
-            android:hint="@string/input_distance"
-            android:textSize="15sp"/>
-
-        <TextView
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:text="@string/meter"
-            android:textSize="20sp"/>
-
-        <Space
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
-
-    </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0sp"
-        android:layout_weight="1"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0sp"
-        android:layout_weight="5"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <Space
-            android:layout_width="0sp"
-            android:layout_weight="10"
-            android:layout_height="wrap_content"/>
-
-        <Button
-            android:id="@+id/N_button"
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:text="@string/N"
-            android:background="#97D3E3"/>
-
-        <Space
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"/>
-
-        <Button
-            android:id="@+id/S_button"
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:text="@string/S"
-            android:background="#97D3E3"/>
-
-        <Space
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"/>
-
-        <Button
-            android:id="@+id/E_button"
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:text="@string/E"
-            android:background="#97D3E3"/>
-
-        <Space
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"/>
-
-        <Button
-            android:id="@+id/W_button"
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:text="@string/W"
-            android:background="#97D3E3"/>
-
-        <Space
-            android:layout_width="0sp"
-            android:layout_height="wrap_content"
-            android:layout_weight="10"/>
-
-    </LinearLayout>
 
     <Space
         android:layout_width="match_parent"
@@ -281,20 +162,6 @@
         android:text="@string/geomagnetic"
         android:textColor="#FFFFFF" />
 
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0sp"
-        android:layout_weight="2"/>
-
-    <Button
-        android:id="@+id/save"
-        android:layout_width="wrap_content"
-        android:layout_height="0sp"
-        android:layout_weight="5"
-        android:background="#EDAD0B"
-        android:text="@string/file"
-        android:textColor="#FFFFFF" />
 
     <Space
         android:layout_width="match_parent"
