@@ -4,23 +4,15 @@
     <string name="title_activity_localize">LocalizeActivity</string>
 
     <!-- activity_main -->
-    <string name="wifi_conf">Wi-Fi 確認</string>
+    <string name="wifi_conf">Wi-Fi Status</string>
     <string name="wifi_support">Android Wifi supports : </string>
     <string name="wifi_availavle">Wi-Fi RTT is available : </string>
-    <string name="input_terminal_number">端末番号入力</string>
-    <string name="input_number">番号を入力してください</string>
-    <string name="configuration">ファイル設定</string>
-    <string name="input_distance">基地局との距離を入力してください</string>
-    <string name="meter">m</string>
-    <string name="mode">モード選択</string>
-    <string name="N">N</string>
-    <string name="S">S</string>
-    <string name="E">E</string>
-    <string name="W">W</string>
-    <string name="station">基地局</string>
-    <string name="terminal">端末</string>
-    <string name="geomagnetic">地磁気</string>
-    <string name="file">ファイル選択</string>
+    <string name="input_terminal_number">DeviceID</string>
+    <string name="input_number">Input deviceID</string>
+    <string name="mode">Mode Selection</string>
+    <string name="station">AP</string>
+    <string name="terminal">Terminal</string>
+    <string name="geomagnetic">Magnetism</string>
 
     <!-- fragment_ranging -->
     <string name="ranging_interval">Ranging Interval</string>

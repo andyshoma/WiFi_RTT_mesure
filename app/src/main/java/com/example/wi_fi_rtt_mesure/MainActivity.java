@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(context, "端末番号を入力してください", Toast.LENGTH_SHORT).show();
             return;
         } else if (id.length() != 6) {
-            Toast.makeText(context, "端末番号が正しくありません", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "6桁の数字を入力してください", Toast.LENGTH_SHORT).show();
             return;
         }
         awareManager.setDeviceId(id);
