@@ -13,6 +13,7 @@ import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -24,8 +25,12 @@ import com.example.wi_fi_rtt_mesure.WifiRttApplication;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 
 public class MagneticActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener  {
+
+    private final static String TAG = "MagneticActivity.java";
+    private final static int CREATE_DOCUMENT_REQUEST = 43;
 
     private WifiRttApplication application;
     private Context context;
@@ -44,6 +49,7 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
     private TextView magYaxisText;
     private TextView magZaxisText;
 
+    private Button makeFileButton;
     private Button cc1fButton;
     private Button cc5fButton;
 
@@ -78,6 +84,9 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
         magXaxisText = findViewById(R.id.mag_yaw);
         magYaxisText = findViewById(R.id.mag_pitch);
         magZaxisText = findViewById(R.id.mag_roll);
+
+        makeFileButton = findViewById(R.id.make_mag_file);
+        makeFileButton.setOnClickListener(this);
 
         cc1fButton = findViewById(R.id.cc1f);
         cc1fButton.setOnClickListener(this);
@@ -146,9 +155,9 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
         orientation[1] = orientationAngles[1] * 180.0 / Math.PI;
         orientation[2] = orientationAngles[2] * 180.0 / Math.PI;
 
-        XaxisText.setText(String.valueOf(orientation[0]));
-        YaxisText.setText(String.valueOf(orientation[1]));
-        ZaxisText.setText(String.valueOf(orientation[2]));
+        XaxisText.setText(String.format(Locale.JAPAN, "%.6f", orientation[0]));
+        YaxisText.setText(String.format(Locale.JAPAN, "%.6f", orientation[1]));
+        ZaxisText.setText(String.format(Locale.JAPAN, "%.6f", orientation[2]));
 
         magXaxisText.setText(String.valueOf(magnetometerReading[0]));
         magYaxisText.setText(String.valueOf(magnetometerReading[1]));
@@ -173,7 +182,16 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.cc1f) {
+        if (view.getId() == R.id.make_mag_file) {
+            createNewFile();
+
+        } else if (view.getId() == R.id.start) {
+            onCallStart();
+
+        } else if (view.getId() == R.id.stop) {
+            onCallStop();
+
+        } else if (view.getId() == R.id.cc1f) {
             onCallCC1F();
 
         } else if (view.getId() == R.id.cc5f) {
@@ -182,13 +200,68 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
         } else if (view.getId() == R.id.point_select) {
             onCallSelect();
 
-        } else if (view.getId() == R.id.start) {
-            onCallStart();
-
-        } else if (view.getId() == R.id.stop) {
-            onCallStop();
-
         }
+    }
+
+    /**
+     * CC1Fボタンが押されたとき
+     */
+    private void onCallCC1F() {
+        if (mapFloar != 1) {
+            mapFloar = 1;
+            cc1fButton.setBackgroundColor(Color.rgb(0, 134, 171));
+            cc5fButton.setBackgroundColor(Color.rgb(151, 211, 227));
+        }
+    }
+
+    /**
+     * CC5Fボタンが押されたとき
+     */
+    private void onCallCC5F() {
+        if (mapFloar != 5) {
+            mapFloar = 5;
+            cc5fButton.setBackgroundColor(Color.rgb(0, 134, 171));
+            cc1fButton.setBackgroundColor(Color.rgb(151, 211, 227));
+        }
+    }
+
+    /**
+     * point selectボタンが押されたとき
+     */
+    private void onCallSelect() {
+        if (application.getUri() != null) {
+            Intent intent = new Intent(context, MapsActivity.class);
+            intent.putExtra("map", mapFloar);
+            startActivity(intent);
+        }else {
+            Toast.makeText(context, "ファイルが作成されていません", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    /**
+     * startボタンが押されたとき
+     */
+    private void onCallStart() {
+        if (application.getUri() != null) {
+            Toast.makeText(context, "ファイルへの出力を開始します", Toast.LENGTH_SHORT).show();
+            String text = "id" + ',' + "yaw" + ',' + "pitch" + ',' + "roll" + ',' +
+                    "magX" + ',' + "magY" + ',' + "magZ" + "timestamp" + '\n';
+
+            save(application.getUri(), text);
+            save_flag = true;
+        }else {
+            Toast.makeText(context, "保存するファイルを作成してください", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    /**
+     * stopボタンが押されたとき
+     */
+    private void onCallStop() {
+        save_flag = false;
+        Toast.makeText(context, "ファイルへの出力を終了しました", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -208,48 +281,33 @@ public class MagneticActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    private void onCallCC1F() {
-        if (mapFloar != 1) {
-            mapFloar = 1;
-            cc1fButton.setBackgroundColor(Color.rgb(0, 134, 171));
-            cc5fButton.setBackgroundColor(Color.rgb(151, 211, 227));
+    /**
+     * ファイルの作成
+     */
+    private void createNewFile() {
+        String filename = deviceID + ".csv";
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+        startActivityForResult(intent, CREATE_DOCUMENT_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        super.onActivityResult(requestCode, resultCode, resultData);
+
+        if (requestCode == CREATE_DOCUMENT_REQUEST && resultCode == RESULT_OK) {
+            if (resultData.getData() != null) {
+                final int takeFlags = getIntent().getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                Uri uri = resultData.getData();
+                getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                application.setUri(uri);
+                Log.d(TAG, uri.toString());
+
+                Toast.makeText(context, "ファイルを作成しました", Toast.LENGTH_SHORT).show();
+            }
         }
-    }
-
-    private void onCallCC5F() {
-        if (mapFloar != 5) {
-            mapFloar = 5;
-            cc5fButton.setBackgroundColor(Color.rgb(0, 134, 171));
-            cc1fButton.setBackgroundColor(Color.rgb(151, 211, 227));
-        }
-    }
-
-    /**
-     * point selectボタンが押されたとき
-     */
-    private void onCallSelect() {
-        Intent intent = new Intent(context, MapsActivity.class);
-        intent.putExtra("map", mapFloar);
-        startActivity(intent);
-    }
-
-    /**
-     * startボタンが押されたとき
-     */
-    private void onCallStart() {
-        Toast.makeText(context, "ファイルへの出力を開始します", Toast.LENGTH_SHORT).show();
-        String text = "id" + ',' + "yaw" + ',' + "pitch" + ',' + "roll" + ',' +
-                "magX" + ',' + "magY" + ',' + "magZ" + "timestamp" + '\n';
-        save(application.getUri(), text);
-        save_flag = true;
-    }
-
-    /**
-     * stopボタンが押されたとき
-     */
-    private void onCallStop() {
-        save_flag = false;
-        Toast.makeText(context, "ファイルへの出力を終了しました", Toast.LENGTH_SHORT).show();
     }
 
 }

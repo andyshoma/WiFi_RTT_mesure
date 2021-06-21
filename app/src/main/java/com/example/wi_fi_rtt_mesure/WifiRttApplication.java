@@ -8,12 +8,15 @@ import android.os.Handler;
 import com.example.wi_fi_rtt_mesure.wifi.AwareManager;
 import com.example.wi_fi_rtt_mesure.wifi.RttManager;
 
+import java.util.Optional;
+
 public class WifiRttApplication extends Application {
 
     private AwareManager awareManager;
     private RttManager rttManager;
 
     private Uri uri;
+    private String deviceID;
 
     @Override
     public void onCreate() {
