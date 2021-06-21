@@ -253,6 +253,7 @@ public class ConnectFragment extends Fragment implements View.OnClickListener{
         } else if (accessPointsSupportFtm != null) {
             partners = toStringsfromScans(accessPointsSupportFtm);
         } else {
+            Toast.makeText(context, "通信相手が追加されていません", Toast.LENGTH_SHORT).show();
             return;
         }
 
